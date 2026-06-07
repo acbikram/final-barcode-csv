@@ -97,8 +97,6 @@
         android:textSize="14sp"
         android:textStyle="bold"
         android:textColor="#00E676"
-        android:backgroundTint="#1E2A32"
-        android:stateListAnimator="@null"
-        android:elevation="0dp"/>
+        android:background="@drawable/button_outline" />
 
 </LinearLayout>
