@@ -68,7 +68,7 @@
         <RadioButton android:id="@+id/rbUnitKgs" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="KGS"/>
     </RadioGroup>
 
-    <com.google.android.material.materialswitch.MaterialSwitch
+    <androidx.appcompat.widget.SwitchCompat
         android:id="@+id/switchDuplicateChecking"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
