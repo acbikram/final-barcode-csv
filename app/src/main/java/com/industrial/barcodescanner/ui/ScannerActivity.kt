@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.text.InputType
+import android.view.View
 import android.view.animation.TranslateAnimation
 import android.widget.Button
 import android.widget.EditText
