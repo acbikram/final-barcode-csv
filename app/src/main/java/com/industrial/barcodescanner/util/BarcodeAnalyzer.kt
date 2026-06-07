@@ -21,7 +21,7 @@ class BarcodeAnalyzer(
     private var lastScannedTime = 0L
     private val debounceDelay = 1500L // 1.5 seconds to avoid multiple scans
 
-    // Only 1D barcode formats (no QR, Data Matrix, etc.)
+    // Only 1D barcode formats (excludes QR, Data Matrix, PDF417, Aztec, etc.)
     private val allowedFormats = setOf(
         Barcode.FORMAT_EAN_13,
         Barcode.FORMAT_EAN_8,
@@ -31,8 +31,7 @@ class BarcodeAnalyzer(
         Barcode.FORMAT_CODE_39,
         Barcode.FORMAT_CODE_93,
         Barcode.FORMAT_CODABAR,
-        Barcode.FORMAT_ITF,
-        Barcode.FORMAT_TELEPEN
+        Barcode.FORMAT_ITF
     )
 
     override fun analyze(imageProxy: ImageProxy) {
@@ -58,7 +57,7 @@ class BarcodeAnalyzer(
                         playBeep()
                         vibrate()
                         onBarcodeDetected(value)
-                        break // Only first valid barcode
+                        break // Only process first valid barcode
                     }
                 }
             }
