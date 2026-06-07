@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="20dp"
-    android:background="#FAF8F6">
+    android:background="#121A24">
 
     <TextView
         android:layout_width="wrap_content"
@@ -12,7 +13,7 @@
         android:text="INVENTORY CONTROL"
         android:textSize="22sp"
         android:textStyle="bold"
-        android:textColor="#111111"
+        android:textColor="#00E676"
         android:layout_marginTop="24dp"/>
 
     <TextView
@@ -20,7 +21,7 @@
         android:layout_height="wrap_content"
         android:text="Warehouse Scanner Management Console"
         android:textSize="14sp"
-        android:textColor="#666666"
+        android:textColor="#A0A0A0"
         android:layout_marginBottom="32dp"/>
 
     <TextView
@@ -29,21 +30,21 @@
         android:text="SELECT TAG TYPE"
         android:textSize="12sp"
         android:textStyle="bold"
-        android:textColor="#333333"/>
+        android:textColor="#FFFFFF"
+        android:layout_marginBottom="8dp"/>
 
     <RadioGroup
         android:id="@+id/rgTagType"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:layout_marginTop="10dp"
         android:layout_marginBottom="24dp">
 
-        <RadioButton android:id="@+id/rbTagA4" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="A4"/>
-        <RadioButton android:id="@+id/rbTag4pcs" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="4PCS"/>
-        <RadioButton android:id="@+id/rbTagVeg" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="VEG"/>
-        <RadioButton android:id="@+id/rbTag4pcsDate" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="4PCS_DATE"/>
-        <RadioButton android:id="@+id/rbTag4pcsSame" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="4PCS_SAME"/>
+        <RadioButton android:id="@+id/rbTagA4" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="A4" android:textColor="#FFFFFF"/>
+        <RadioButton android:id="@+id/rbTag4pcs" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="4PCS" android:textColor="#FFFFFF"/>
+        <RadioButton android:id="@+id/rbTagVeg" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="VEG" android:textColor="#FFFFFF"/>
+        <RadioButton android:id="@+id/rbTag4pcsDate" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="4PCS_DATE" android:textColor="#FFFFFF"/>
+        <RadioButton android:id="@+id/rbTag4pcsSame" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="4PCS_SAME" android:textColor="#FFFFFF"/>
     </RadioGroup>
 
     <TextView
@@ -52,20 +53,20 @@
         android:text="SELECT UNIT TYPE"
         android:textSize="12sp"
         android:textStyle="bold"
-        android:textColor="#333333"/>
+        android:textColor="#FFFFFF"
+        android:layout_marginBottom="8dp"/>
 
     <RadioGroup
         android:id="@+id/rgUnitType"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:layout_marginTop="10dp"
         android:layout_marginBottom="24dp">
 
-        <RadioButton android:id="@+id/rbUnitPcs" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="PCS"/>
-        <RadioButton android:id="@+id/rbUnitPkt" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="PKT"/>
-        <RadioButton android:id="@+id/rbUnitCtn" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="CTN"/>
-        <RadioButton android:id="@+id/rbUnitKgs" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="KGS"/>
+        <RadioButton android:id="@+id/rbUnitPcs" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="PCS" android:textColor="#FFFFFF"/>
+        <RadioButton android:id="@+id/rbUnitPkt" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="PKT" android:textColor="#FFFFFF"/>
+        <RadioButton android:id="@+id/rbUnitCtn" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="CTN" android:textColor="#FFFFFF"/>
+        <RadioButton android:id="@+id/rbUnitKgs" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="KGS" android:textColor="#FFFFFF"/>
     </RadioGroup>
 
     <androidx.appcompat.widget.SwitchCompat
@@ -74,6 +75,7 @@
         android:layout_height="wrap_content"
         android:text="Prevent duplicate scans"
         android:textSize="15sp"
+        android:textColor="#FFFFFF"
         android:layout_marginBottom="32dp"/>
 
     <Button
@@ -84,7 +86,7 @@
         android:textSize="16sp"
         android:textStyle="bold"
         android:backgroundTint="#00E676"
-        android:textColor="#FFFFFF"
+        android:textColor="#121A24"
         android:layout_marginBottom="16dp"/>
 
     <Button
@@ -94,7 +96,9 @@
         android:text="LOGGED HISTORY &amp; EXPORTS"
         android:textSize="14sp"
         android:textStyle="bold"
-        android:textColor="#111111"
-        android:backgroundTint="#FFFFFF" />
+        android:textColor="#00E676"
+        android:backgroundTint="#1E2A32"
+        android:stateListAnimator="@null"
+        android:elevation="0dp"/>
 
 </LinearLayout>
