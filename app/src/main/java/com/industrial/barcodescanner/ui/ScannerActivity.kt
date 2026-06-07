@@ -2,10 +2,7 @@ package com.industrial.barcodescanner.ui
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
-import android.widget.Button
-import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -43,7 +40,7 @@ class ScannerActivity : AppCompatActivity() {
         binding = ActivityScannerBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        viewModel = ViewModelProvider(this).get(ScannerViewModel::class.java)
+        viewModel = ViewModelProvider(this)[ScannerViewModel::class.java]
 
         tagType = intent.getStringExtra("TAG_TYPE") ?: "A4"
         unitType = intent.getStringExtra("UNIT_TYPE") ?: "PCS"
@@ -74,28 +71,34 @@ class ScannerActivity : AppCompatActivity() {
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
         cameraProviderFuture.addListener({
-            val cameraProvider = cameraProviderFuture.get()
-            val preview = Preview.Builder().build().also {
-                it.setSurfaceProvider(binding.viewFinder.surfaceProvider)
-            }
-            val imageAnalysis = ImageAnalysis.Builder()
-                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                .build()
-            imageAnalysis.setAnalyzer(
-                ContextCompat.getMainExecutor(this),
-                BarcodeAnalyzer(this) { barcode ->
-                    pendingBarcode = barcode
-                    if (preventDuplicates) {
-                        lifecycleScope.launch {
-                            viewModel.processBarcode(barcode, tagType, unitType, true, 1)
-                        }
-                    } else {
-                        showCopiesDialog(barcode, isMerge = false)
-                    }
+            try {
+                val cameraProvider = cameraProviderFuture.get()
+                val preview = Preview.Builder().build().also {
+                    it.setSurfaceProvider(binding.viewFinder.surfaceProvider)
                 }
-            )
-            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-            cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalysis)
+                val imageAnalysis = ImageAnalysis.Builder()
+                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                    .build()
+                imageAnalysis.setAnalyzer(
+                    ContextCompat.getMainExecutor(this),
+                    BarcodeAnalyzer(this) { barcode ->
+                        pendingBarcode = barcode
+                        if (preventDuplicates) {
+                            lifecycleScope.launch {
+                                viewModel.processBarcode(barcode, tagType, unitType, true, 1)
+                            }
+                        } else {
+                            showCopiesDialog(barcode, isMerge = false)
+                        }
+                    }
+                )
+                val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+                cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalysis)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(this, "Camera error: ${e.message}", Toast.LENGTH_LONG).show()
+                finish()
+            }
         }, ContextCompat.getMainExecutor(this))
     }
 
@@ -119,30 +122,18 @@ class ScannerActivity : AppCompatActivity() {
         autoDismissJob?.cancel()
         copiesDialog?.dismiss()
 
-        val dialogView = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            )
-            setPadding(50, 50, 50, 50)
-        }
-
-        val buttons = (1..5).map { copies ->
-            Button(this).apply {
+        val buttons = listOf(1, 2, 3, 4, 5).map { copies ->
+            android.widget.Button(this).apply {
                 text = copies.toString()
                 textSize = 28f
-                layoutParams = LinearLayout.LayoutParams(
+                layoutParams = android.widget.LinearLayout.LayoutParams(
                     0,
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    android.widget.LinearLayout.LayoutParams.WRAP_CONTENT,
                     1f
                 ).apply {
                     setMargins(8, 0, 8, 0)
                 }
-                background = GradientDrawable().apply {
-                    setColor(ContextCompat.getColor(context, android.R.color.holo_blue_dark))
-                    setShape(GradientDrawable.OVAL)
-                }
+                setBackgroundColor(ContextCompat.getColor(context, android.R.color.holo_blue_dark))
                 setTextColor(ContextCompat.getColor(context, android.R.color.white))
                 setOnClickListener {
                     autoDismissJob?.cancel()
@@ -161,7 +152,16 @@ class ScannerActivity : AppCompatActivity() {
                 }
             }
         }
-        buttons.forEach { dialogView.addView(it) }
+
+        val dialogView = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.HORIZONTAL
+            layoutParams = android.widget.LinearLayout.LayoutParams(
+                android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            setPadding(50, 50, 50, 50)
+            buttons.forEach { addView(it) }
+        }
 
         copiesDialog = AlertDialog.Builder(this)
             .setTitle(if (isMerge) "Add how many copies?" else "Select number of copies")
@@ -196,11 +196,13 @@ class ScannerActivity : AppCompatActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == CAMERA_REQUEST_CODE && allPermissionsGranted()) {
-            startCamera()
-        } else {
-            Toast.makeText(this, "Camera permission required", Toast.LENGTH_SHORT).show()
-            finish()
+        if (requestCode == CAMERA_REQUEST_CODE) {
+            if (allPermissionsGranted()) {
+                startCamera()
+            } else {
+                Toast.makeText(this, "Camera permission required to scan barcodes", Toast.LENGTH_LONG).show()
+                finish()
+            }
         }
     }
 
