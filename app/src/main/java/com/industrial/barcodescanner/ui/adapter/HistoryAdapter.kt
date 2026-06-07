@@ -37,7 +37,7 @@ class HistoryAdapter(
         holder.txtPrice.text = "Price: ${item.price ?: "N/A"}"
         holder.txtTag.text = item.tagType
         holder.txtUnit.text = item.unitType
-        holder.txtCopies.text = "Copies: ${item.copies}"
+        holder.txtCopies.text = "Copies: ${item.copies}"   // ✅ copies displayed correctly
 
         holder.itemView.setOnClickListener { onPriceRowInteraction(item) }
         holder.btnDelete.setOnClickListener { onDeleteInteraction(item) }
