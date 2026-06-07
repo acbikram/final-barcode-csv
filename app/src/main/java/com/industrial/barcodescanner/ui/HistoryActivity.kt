@@ -4,9 +4,12 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.text.InputType
 import android.widget.Button
+import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -84,7 +87,28 @@ class HistoryActivity : AppCompatActivity() {
     }
 
     private fun showEditPriceDialog(entity: BarcodeEntity) {
-        // Simple price update for demonstration
-        viewModel.updatePrice(entity, "0.00")
+        val input = EditText(this).apply {
+            hint = "Enter price (e.g., 12.99)"
+            inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
+            setText(entity.price ?: "")
+            setTextColor(android.graphics.Color.WHITE)
+            setHintTextColor(android.graphics.Color.GRAY)
+            background = androidx.core.content.ContextCompat.getDrawable(this@HistoryActivity, android.R.drawable.editbox_background)
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Edit Price")
+            .setMessage("Set price for barcode: ${entity.barcode}")
+            .setView(input)
+            .setPositiveButton("Save") { _, _ ->
+                val newPrice = input.text.toString().trim()
+                if (newPrice.isNotEmpty()) {
+                    viewModel.updatePrice(entity, newPrice)
+                    Toast.makeText(this, "Price updated", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this, "Price cannot be empty", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 }
