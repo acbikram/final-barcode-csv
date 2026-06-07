@@ -3,6 +3,8 @@ package com.industrial.barcodescanner.ui
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -14,6 +16,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.industrial.barcodescanner.R
 import com.industrial.barcodescanner.databinding.ActivityScannerBinding
 import com.industrial.barcodescanner.ui.viewmodel.ScannerViewModel
 import com.industrial.barcodescanner.util.BarcodeAnalyzer
@@ -25,6 +28,9 @@ class ScannerActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityScannerBinding
     private lateinit var viewModel: ScannerViewModel
+    private lateinit var tvLastBarcode: TextView
+    private lateinit var tvTagDisplay: TextView
+    private lateinit var tvUnitDisplay: TextView
 
     private var tagType: String = "A4"
     private var unitType: String = "PCS"
@@ -46,6 +52,18 @@ class ScannerActivity : AppCompatActivity() {
         unitType = intent.getStringExtra("UNIT_TYPE") ?: "PCS"
         preventDuplicates = intent.getBooleanExtra("PREVENT_DUPLICATES", true)
 
+        tvLastBarcode = findViewById(R.id.tvLastBarcode)
+        tvTagDisplay = findViewById(R.id.tvTagDisplay)
+        tvUnitDisplay = findViewById(R.id.tvUnitDisplay)
+
+        // Set initial values
+        tvTagDisplay.text = tagType
+        tvUnitDisplay.text = unitType
+
+        findViewById<Button>(R.id.btnClose).setOnClickListener {
+            finish()
+        }
+
         if (allPermissionsGranted()) {
             startCamera()
         } else {
@@ -62,6 +80,9 @@ class ScannerActivity : AppCompatActivity() {
 
         viewModel.scanSuccess.observe(this) { barcode ->
             barcode?.let {
+                tvLastBarcode.text = it
+                tvTagDisplay.text = tagType
+                tvUnitDisplay.text = unitType
                 Toast.makeText(this, "Saved: $it", Toast.LENGTH_SHORT).show()
                 viewModel.resetEvents()
             }
@@ -123,7 +144,7 @@ class ScannerActivity : AppCompatActivity() {
         copiesDialog?.dismiss()
 
         val buttons = listOf(1, 2, 3, 4, 5).map { copies ->
-            android.widget.Button(this).apply {
+            Button(this).apply {
                 text = copies.toString()
                 textSize = 28f
                 layoutParams = android.widget.LinearLayout.LayoutParams(
@@ -200,7 +221,7 @@ class ScannerActivity : AppCompatActivity() {
             if (allPermissionsGranted()) {
                 startCamera()
             } else {
-                Toast.makeText(this, "Camera permission required to scan barcodes", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Camera permission required", Toast.LENGTH_LONG).show()
                 finish()
             }
         }
