@@ -3,13 +3,16 @@
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" 
+        android:maxSdkVersion="28" />
 
     <application
         android:name=".BarcodeApplication"
         android:allowBackup="true"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.BarcodeScanner">
+        android:theme="@style/Theme.BarcodeScanner"
+        android:requestLegacyExternalStorage="true">
         
         <activity
             android:name=".ui.HomeActivity"
