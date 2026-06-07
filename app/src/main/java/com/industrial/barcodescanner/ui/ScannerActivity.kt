@@ -43,7 +43,6 @@ class ScannerActivity : AppCompatActivity() {
     private var autoDismissJob: Job? = null
     private var copiesDialog: AlertDialog? = null
     private var pendingBarcode: String? = null
-    private var pendingMergeBarcode: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,16 +59,13 @@ class ScannerActivity : AppCompatActivity() {
         tvTagDisplay = findViewById(R.id.tvTagDisplay)
         tvUnitDisplay = findViewById(R.id.tvUnitDisplay)
 
-        // Set initial values
         tvTagDisplay.text = tagType
         tvUnitDisplay.text = unitType
 
-        // Manual entry button
         findViewById<Button>(R.id.btnManualEntry).setOnClickListener {
             showManualEntryDialog()
         }
 
-        // Close button
         findViewById<Button>(R.id.btnClose).setOnClickListener {
             finish()
         }
@@ -82,8 +78,7 @@ class ScannerActivity : AppCompatActivity() {
 
         viewModel.duplicateWarning.observe(this) { barcode ->
             barcode?.let {
-                pendingMergeBarcode = barcode
-                showDuplicateResolutionDialog(barcode)
+                showMergeDialog(it)
                 viewModel.resetEvents()
             }
         }
@@ -114,19 +109,12 @@ class ScannerActivity : AppCompatActivity() {
                     ContextCompat.getMainExecutor(this),
                     BarcodeAnalyzer(this) { barcode ->
                         pendingBarcode = barcode
-                        if (preventDuplicates) {
-                            lifecycleScope.launch {
-                                viewModel.processBarcode(barcode, tagType, unitType, true, 1)
-                            }
-                        } else {
-                            showCopiesDialog(barcode, isMerge = false)
-                        }
+                        showCopiesDialog(barcode)
                     }
                 )
                 val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
                 cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalysis)
 
-                // Start scan line animation
                 startScanLineAnimation()
 
             } catch (e: Exception) {
@@ -139,28 +127,24 @@ class ScannerActivity : AppCompatActivity() {
 
     private fun startScanLineAnimation() {
         val scanLine = findViewById<View>(R.id.scanLine)
-        if (scanLine != null) {
-            // Wait for layout to be measured
-            scanLine.post {
-                val previewHeight = binding.viewFinder.height
-                if (previewHeight > 0) {
-                    val animation = TranslateAnimation(
-                        0f, 0f, 0f, (previewHeight - 20).toFloat()
-                    ).apply {
-                        duration = 2000
-                        repeatMode = TranslateAnimation.REVERSE
-                        repeatCount = TranslateAnimation.INFINITE
-                    }
-                    scanLine.startAnimation(animation)
-                } else {
-                    // fallback animation
-                    val animation = TranslateAnimation(0f, 0f, 0f, 180f).apply {
-                        duration = 2000
-                        repeatMode = TranslateAnimation.REVERSE
-                        repeatCount = TranslateAnimation.INFINITE
-                    }
-                    scanLine.startAnimation(animation)
+        scanLine?.post {
+            val previewHeight = binding.viewFinder.height
+            if (previewHeight > 0) {
+                val animation = TranslateAnimation(
+                    0f, 0f, 0f, (previewHeight - 20).toFloat()
+                ).apply {
+                    duration = 2000
+                    repeatMode = TranslateAnimation.REVERSE
+                    repeatCount = TranslateAnimation.INFINITE
                 }
+                scanLine.startAnimation(animation)
+            } else {
+                val animation = TranslateAnimation(0f, 0f, 0f, 180f).apply {
+                    duration = 2000
+                    repeatMode = TranslateAnimation.REVERSE
+                    repeatCount = TranslateAnimation.INFINITE
+                }
+                scanLine.startAnimation(animation)
             }
         }
     }
@@ -180,13 +164,8 @@ class ScannerActivity : AppCompatActivity() {
             .setPositiveButton("Scan") { _, _ ->
                 val barcode = input.text.toString().trim()
                 if (barcode.isNotEmpty()) {
-                    if (preventDuplicates) {
-                        lifecycleScope.launch {
-                            viewModel.processBarcode(barcode, tagType, unitType, true, 1)
-                        }
-                    } else {
-                        showCopiesDialog(barcode, isMerge = false)
-                    }
+                    pendingBarcode = barcode
+                    showCopiesDialog(barcode)
                 } else {
                     Toast.makeText(this, "Please enter a barcode", Toast.LENGTH_SHORT).show()
                 }
@@ -195,23 +174,7 @@ class ScannerActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun showDuplicateResolutionDialog(barcode: String) {
-        AlertDialog.Builder(this)
-            .setTitle("Duplicate found")
-            .setMessage("Barcode $barcode already exists with same Tag & Unit.\nAdd copies to existing entry?")
-            .setPositiveButton("Yes, add copies") { _, _ ->
-                showCopiesDialog(barcode, isMerge = true)
-            }
-            .setNegativeButton("No, cancel") { _, _ ->
-                pendingBarcode = null
-                pendingMergeBarcode = null
-                Toast.makeText(this, "Scan discarded", Toast.LENGTH_SHORT).show()
-            }
-            .setCancelable(false)
-            .show()
-    }
-
-    private fun showCopiesDialog(barcode: String, isMerge: Boolean) {
+    private fun showCopiesDialog(barcode: String) {
         autoDismissJob?.cancel()
         copiesDialog?.dismiss()
 
@@ -231,17 +194,21 @@ class ScannerActivity : AppCompatActivity() {
                 setOnClickListener {
                     autoDismissJob?.cancel()
                     copiesDialog?.dismiss()
-                    if (isMerge) {
+                    if (preventDuplicates) {
                         lifecycleScope.launch {
-                            viewModel.mergeCopies(barcode, tagType, unitType, copies)
+                            val existing = viewModel.checkDuplicate(barcode, tagType, unitType)
+                            if (existing != null) {
+                                showMergeDialog(barcode, copies)
+                            } else {
+                                viewModel.saveBarcode(barcode, tagType, unitType, copies)
+                            }
                         }
                     } else {
                         lifecycleScope.launch {
-                            viewModel.processBarcode(barcode, tagType, unitType, preventDuplicates, copies)
+                            viewModel.saveBarcode(barcode, tagType, unitType, copies)
                         }
                     }
                     pendingBarcode = null
-                    pendingMergeBarcode = null
                 }
             }
         }
@@ -257,7 +224,7 @@ class ScannerActivity : AppCompatActivity() {
         }
 
         copiesDialog = AlertDialog.Builder(this)
-            .setTitle(if (isMerge) "Add how many copies?" else "Select number of copies")
+            .setTitle("Select number of copies")
             .setView(dialogView)
             .setCancelable(false)
             .create()
@@ -268,15 +235,37 @@ class ScannerActivity : AppCompatActivity() {
             delay(3000)
             if (copiesDialog?.isShowing == true) {
                 copiesDialog?.dismiss()
-                if (isMerge) {
-                    viewModel.mergeCopies(barcode, tagType, unitType, 1)
+                if (preventDuplicates) {
+                    val existing = viewModel.checkDuplicate(barcode, tagType, unitType)
+                    if (existing != null) {
+                        showMergeDialog(barcode, 1)
+                    } else {
+                        viewModel.saveBarcode(barcode, tagType, unitType, 1)
+                    }
                 } else {
-                    viewModel.processBarcode(barcode, tagType, unitType, preventDuplicates, 1)
+                    viewModel.saveBarcode(barcode, tagType, unitType, 1)
                 }
                 pendingBarcode = null
-                pendingMergeBarcode = null
             }
         }
+    }
+
+    private fun showMergeDialog(barcode: String, copies: Int = 1) {
+        AlertDialog.Builder(this)
+            .setTitle("Duplicate Found")
+            .setMessage("Barcode $barcode already exists.\nAdd $copies copy/copies to existing entry?")
+            .setPositiveButton("Yes, Merge") { _, _ ->
+                lifecycleScope.launch {
+                    viewModel.mergeCopies(barcode, tagType, unitType, copies)
+                }
+            }
+            .setNegativeButton("No, Create New") { _, _ ->
+                lifecycleScope.launch {
+                    viewModel.saveBarcode(barcode, tagType, unitType, copies)
+                }
+            }
+            .setCancelable(false)
+            .show()
     }
 
     private fun allPermissionsGranted() = ContextCompat.checkSelfPermission(
@@ -303,7 +292,6 @@ class ScannerActivity : AppCompatActivity() {
         super.onDestroy()
         autoDismissJob?.cancel()
         copiesDialog?.dismiss()
-        // Stop scan line animation
         findViewById<View>(R.id.scanLine)?.clearAnimation()
     }
 
