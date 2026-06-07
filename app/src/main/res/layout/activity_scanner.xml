@@ -6,10 +6,10 @@
     android:orientation="vertical"
     android:background="#121A24">
 
-    <!-- Small camera preview at the top -->
+    <!-- Camera preview: fixed 120dp height -->
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_height="120dp"
         android:layout_marginTop="16dp"
         android:layout_marginHorizontal="32dp"
         android:background="#000000">
@@ -36,10 +36,11 @@
 
     </FrameLayout>
 
-    <!-- Barcode result display area -->
+    <!-- Content area: takes remaining space -->
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:layout_margin="24dp"
         app:cardBackgroundColor="#1E2A32"
         app:cardCornerRadius="12dp"
@@ -47,15 +48,16 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="16dp"
+            android:gravity="center">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Last Scanned Barcode"
-                android:textSize="12sp"
+                android:textSize="14sp"
                 android:textColor="#888888"
                 android:textStyle="bold"/>
 
@@ -64,28 +66,31 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="---"
-                android:textSize="20sp"
+                android:textSize="24sp"
                 android:textColor="#00E676"
                 android:fontFamily="monospace"
-                android:layout_marginTop="8dp"/>
+                android:layout_marginTop="16dp"
+                android:gravity="center"/>
 
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="#333333"
-                android:layout_marginVertical="12dp"/>
+                android:layout_marginVertical="20dp"/>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:layout_marginBottom="16dp">
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Tag:"
-                    android:textColor="#888888"/>
+                    android:textColor="#888888"
+                    android:textSize="16sp"/>
 
                 <TextView
                     android:id="@+id/tvTagDisplay"
@@ -94,6 +99,7 @@
                     android:layout_weight="1"
                     android:text="---"
                     android:textColor="#FFFFFF"
+                    android:textSize="16sp"
                     android:gravity="end"/>
 
             </LinearLayout>
@@ -101,15 +107,16 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:layout_marginBottom="24dp">
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Unit:"
-                    android:textColor="#888888"/>
+                    android:textColor="#888888"
+                    android:textSize="16sp"/>
 
                 <TextView
                     android:id="@+id/tvUnitDisplay"
@@ -118,36 +125,32 @@
                     android:layout_weight="1"
                     android:text="---"
                     android:textColor="#FFFFFF"
+                    android:textSize="16sp"
                     android:gravity="end"/>
 
             </LinearLayout>
 
+            <Button
+                android:id="@+id/btnManualEntry"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginBottom="16dp"
+                android:text="ENTER BARCODE MANUALLY"
+                android:textSize="14sp"
+                android:textColor="#00E676"
+                android:background="@drawable/button_outline" />
+
+            <Button
+                android:id="@+id/btnClose"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="BACK TO HOME"
+                android:textSize="14sp"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#FF5252" />
+
         </LinearLayout>
 
     </androidx.cardview.widget.CardView>
-
-    <!-- Manual entry button -->
-    <Button
-        android:id="@+id/btnManualEntry"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:layout_marginHorizontal="24dp"
-        android:layout_marginBottom="16dp"
-        android:text="ENTER BARCODE MANUALLY"
-        android:textSize="14sp"
-        android:textColor="#00E676"
-        android:background="@drawable/button_outline" />
-
-    <!-- Close button -->
-    <Button
-        android:id="@+id/btnClose"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:layout_marginHorizontal="24dp"
-        android:layout_marginBottom="32dp"
-        android:text="BACK TO HOME"
-        android:textSize="14sp"
-        android:textColor="#FFFFFF"
-        android:backgroundTint="#FF5252" />
 
 </LinearLayout>
