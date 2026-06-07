@@ -3,7 +3,10 @@ package com.industrial.barcodescanner.ui
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.text.InputType
+import android.view.animation.TranslateAnimation
 import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -60,6 +63,12 @@ class ScannerActivity : AppCompatActivity() {
         tvTagDisplay.text = tagType
         tvUnitDisplay.text = unitType
 
+        // Manual entry button
+        findViewById<Button>(R.id.btnManualEntry).setOnClickListener {
+            showManualEntryDialog()
+        }
+
+        // Close button
         findViewById<Button>(R.id.btnClose).setOnClickListener {
             finish()
         }
@@ -115,12 +124,74 @@ class ScannerActivity : AppCompatActivity() {
                 )
                 val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
                 cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalysis)
+
+                // Start scan line animation
+                startScanLineAnimation()
+
             } catch (e: Exception) {
                 e.printStackTrace()
                 Toast.makeText(this, "Camera error: ${e.message}", Toast.LENGTH_LONG).show()
                 finish()
             }
         }, ContextCompat.getMainExecutor(this))
+    }
+
+    private fun startScanLineAnimation() {
+        val scanLine = findViewById<View>(R.id.scanLine)
+        if (scanLine != null) {
+            // Wait for layout to be measured
+            scanLine.post {
+                val previewHeight = binding.viewFinder.height
+                if (previewHeight > 0) {
+                    val animation = TranslateAnimation(
+                        0f, 0f, 0f, (previewHeight - 20).toFloat()
+                    ).apply {
+                        duration = 2000
+                        repeatMode = TranslateAnimation.REVERSE
+                        repeatCount = TranslateAnimation.INFINITE
+                    }
+                    scanLine.startAnimation(animation)
+                } else {
+                    // fallback animation
+                    val animation = TranslateAnimation(0f, 0f, 0f, 180f).apply {
+                        duration = 2000
+                        repeatMode = TranslateAnimation.REVERSE
+                        repeatCount = TranslateAnimation.INFINITE
+                    }
+                    scanLine.startAnimation(animation)
+                }
+            }
+        }
+    }
+
+    private fun showManualEntryDialog() {
+        val input = EditText(this).apply {
+            hint = "Enter barcode number"
+            inputType = InputType.TYPE_CLASS_NUMBER
+            setTextColor(android.graphics.Color.WHITE)
+            setHintTextColor(android.graphics.Color.GRAY)
+            background = ContextCompat.getDrawable(this@ScannerActivity, android.R.drawable.editbox_background)
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Manual Barcode Entry")
+            .setMessage("Type or paste the barcode number")
+            .setView(input)
+            .setPositiveButton("Scan") { _, _ ->
+                val barcode = input.text.toString().trim()
+                if (barcode.isNotEmpty()) {
+                    if (preventDuplicates) {
+                        lifecycleScope.launch {
+                            viewModel.processBarcode(barcode, tagType, unitType, true, 1)
+                        }
+                    } else {
+                        showCopiesDialog(barcode, isMerge = false)
+                    }
+                } else {
+                    Toast.makeText(this, "Please enter a barcode", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun showDuplicateResolutionDialog(barcode: String) {
@@ -231,6 +302,8 @@ class ScannerActivity : AppCompatActivity() {
         super.onDestroy()
         autoDismissJob?.cancel()
         copiesDialog?.dismiss()
+        // Stop scan line animation
+        findViewById<View>(R.id.scanLine)?.clearAnimation()
     }
 
     companion object {
