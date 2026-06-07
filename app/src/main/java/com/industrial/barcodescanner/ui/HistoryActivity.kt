@@ -36,7 +36,7 @@ class HistoryActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_history)
 
-        viewModel = ViewModelProvider(this).get(HistoryViewModel::class.java)
+        viewModel = ViewModelProvider(this)[HistoryViewModel::class.java]
 
         val recyclerHistory = findViewById<RecyclerView>(R.id.recyclerHistory)
         val btnExportCsv = findViewById<Button>(R.id.btnExportCsv)
@@ -84,7 +84,7 @@ class HistoryActivity : AppCompatActivity() {
     }
 
     private fun showEditPriceDialog(entity: BarcodeEntity) {
-        // For now, just update with a default price
+        // Simple price update for demonstration
         viewModel.updatePrice(entity, "0.00")
     }
 }
